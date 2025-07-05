@@ -1,4 +1,4 @@
-# 🎖️ ShimmY Combined Secondary Skills
+# 🎖️ ShimmY's Combo Skills
 
 ## 📋 Description
 Your hero gets extra Ranks by combining secondary skills at advanced level!  
