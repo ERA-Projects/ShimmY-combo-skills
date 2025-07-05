@@ -1,0 +1,53 @@
+{
+	"shimy": {
+		"combat":{
+			"text":{
+				"stat":"All of @heroName@'s troops gain +@value@ atack skill"
+			}
+		},
+		"visit":{
+			"text":"@objName@\n\nDo you use your {Explorer} powers to visit @objName@ from afar?"
+		},
+		"growth": {
+			"town": "\nHero skills +@number@",
+			"currentTown": "\nCurrent town is @townName@",
+			"noTown": "\nNo town selected by this hero",
+			"dialog": {
+				"question":"\nDo you wish set a new town for this hero?",
+				"title": "Increase creature growth of a specific town by 50% page @current@ of @total@\n\nSelect town to set bonus from that hero",
+				"townLine": "@townName@ town currently has bonuses: @bonuses@",
+				"next": "next page",
+				"error": {
+					"noTowns": "no towns"
+				}
+			}
+		},
+		"ss": {
+			"format": {
+				"learnt": "{~Orange}@skillName@}",
+				"needed": "{~Gray}@skillName@}",
+				"advanced": "{~Green}@skillName@}"
+			},
+			"full": {
+				"needAdvanced": "\n{»} Skills nedeed at advanced level:\n",
+				"extraCast": "\n\n{~Yellow}Archmage} - one extra cast per turn in battle.",
+				"extraStrike": "\n\n{~Yellow}Warmaster} - all units have a 25% chance for an extra strike (or shot).",
+				"rangeVisit": "\n\n{~Yellow}Explorer} - you can visit objects from afar and gain more information when right-clicking.",
+				"spellDamage": "\n\n{~Yellow}Grand Wizzard} - add your current spell points to your magic damage.",
+				"combatSummon": "\n\n{~Yellow}Demolisher} - summon a stack of Cyclops Kings equal to at least your hero lvl.",
+				"extraGrowth": "\n\n{~Yellow}Aristocrat} - increase creature growth of a specific town by 50%.",
+				"extraDefence": "\n\n{~Yellow}General} - whenever a unit gains luck or morale increase all your unit's attack by +1 (+2 if Necro)."
+			},
+			"short": {
+				"needAdvanced": "\n{»} Skills needed at advanced level:\n",
+				"extraCast": "\n\n{~Yellow}Archmage} - one extra cast per turn in battle.",
+				"extraStrike": "\n\n{~Yellow}Warmaster} - all units have a 25% chance for an extra strike (or shot).",
+				"rangeVisit": "\n\n{~Yellow}Explorer} - you can visit objects from afar and gain more information when right-clicking.",
+				"spellDamage": "\n\n{~Yellow}Grand Wizzard} - add your current spell points to your magic damage.",
+				"combatSummon": "\n\n{~Yellow}Demolisher} - summon a stack of Cyclops Kings equal to at least your hero lvl.",
+				"extraGrowth": "\n\n{~Yellow}Aristocrat} - increase creature growth of a specific town by 50%.",
+				"extraDefence": "\n\n{~Yellow}General} - whenever a unit gains luck or morale increase all your unit's attack by +1 (+2 if Necro)."
+			}
+		}
+	}
+}

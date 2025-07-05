@@ -1,0 +1,95 @@
+ZVSE2
+
+!#DC(SIZEOF_HEROTYPE_STRUCT) =64;
+
+
+!?FU(shimy_HeroClass_SkillLearnability);
+!#VA(classId:x) (skillId:x) (chance:x);
+  // Get HeroTypesTable from its ptr at 0x67DCEC/4/?(typesTable:y);
+  !!UN:C6806764/4/?(typesTable:y);
+
+  // get array offset for each heroType
+  !!VR(avalaiabilityOffset:y):S(classId) *(SIZEOF_HEROTYPE_STRUCT) + 24 +(skillId);
+
+  // set value 10 for the all skills idk how you plan to calculate that - mb add 1?
+  !!FU:S(@chance)/?(argSyntax:y);
+  !!if&(argSyntax)=(ARG_SYNTAX_SET);
+    !!UN:C(typesTable)/(avalaiabilityOffset)/-1/(chance:x);
+
+  !!el&(argSyntax)=(ARG_SYNTAX_GET);
+    !!UN:C(typesTable)/(avalaiabilityOffset)/-1/?(chance:x);
+  !!en;
+
+!?FU(shimy_Hero_GetObjectRange);
+!#VA(heroId:x) (x:x) (y:x) (z:x) (result:x);
+
+  !!VR(result):S(NULL);
+
+  !!HE(heroId):P?(hX:y)/?(hY:y)/?(hZ:y);
+  !!if&(z)=(hZ);
+    !!VR(dX:y):S(hX) -(x) Sd*(dX);          [(x1-x2)]
+    !!VR(dY:y):S(hY) -(y) Sd*(dY);
+    !!VR(result):S(dX) +(dY); [(y1-y2)]
+  !!en;
+
+!?FU(shimy_Hero_CanReachObject);
+!#VA(heroId:x) (x:x) (y:x) (z:x) (result:x);
+  !!VR(result):S(FALSE);
+  !!HE(heroId:x):O?o;
+  !!VR(playerBits:y):S1 Sd<<o;
+  !!TR(x)/(y)/(z):V?(tileBits:y);
+  !!VR(tileBits):&(playerBits);
+  !!if&(tileBits);
+    !!HE(heroId):Z?(hero:y) S(SKILL_SCOUTING)/?(scoutingLvl:y);
+    *!SN:E5128928/(CALLCONV_THISCALL)/(hero); [int __thiscall GetScootingRadius(_Hero_ *this) 4E42E0]
+    
+    *!VR(maxRange:y):Sv1 *v1;
+    !!VR(range:y):S(scoutingLvl) *2 +5 F5/11;     /simi
+    !!VR(maxRange:y):S(range) *(range);
+    !!FU(shimy_Hero_GetObjectRange):P(heroId)/(x)/(y)/(z)/?(objRange:y);
+    !!if&(maxRange)>(objRange);
+      !!VR(result):S(TRUE);
+    !!en;
+  !!en;
+
+
+!?FU(shimy_BattleStack_GetSide);
+!#VA(stack:x) (result:x);
+  !!SN:E4456032/(CALLCONV_THISCALL)/(stack);
+  !!VR(result):Sv1;
+
+
+!?FU(shimy_BattleStack_CanAttack);
+!#VA(stack:x) (result:x);
+  !!VR(result):S(FALSE);
+  !!UN:C(stack)/76/4/?n C(stack)/656/4/?(isBlind:y) C(stack)/688/4/?(isStoned:y) C(stack)/704/4/?(isParalized:y);
+  !!if&n>0/(isBlind)=0/(isStoned)=0/(isParalized)=0;;
+    !!VR(result):S(TRUE);
+  !!en;
+
+
+!?FU(shimy_AdvMgr_AiHeroEnterObject);
+!#VA(x:x) (y:x) (z:x) (heroId:x) (mobilizeHero:x) (quiet:x);
+
+!?FU(shimy_AdvMgr_PlayerHeroEnterObject);
+; x1, x2, x3 - coords (x/y/z)
+!#VA(x:x) (y:x) (z:x) (heroId:x) (mobilizeHero:x) (quiet:x);
+!!if&(mobilizeHero)=0;
+  !#VA(storedOpp[5]:y);
+  !!re i/0/4;
+    !!UN:Ci/4882831/(UNC_INT8)/?(storedOpp[i]) Ci/4882831/(UNC_INT8)/(NOP_1);
+  !!en;
+!!en;
+
+!!HE(heroId):Z?(hero:y);
+!!FU(WOG_PackedCoords):P(x)/(y)/(z)/?(packed:y);
+!!FU(WOG_AdvMgr_GetMapItem):P(x)/(y)/(z)/?(mapItem:y);
+
+!!UN:C(ADV_MANAGER)/(UNC_UINT32)/?(advMgr:y);
+!!SN:E4892432/(CALLCONV_THISCALL)/(advMgr)/(mapItem)/(packed); AdvMgr_Enter2Object_Player
+
+!!if&(mobilizeHero)=0;
+  !!re i/0/4;
+    !!UN:Ci/4882831/(UNC_INT8)/(storedOpp[i]);
+  !!en;
+!!en;

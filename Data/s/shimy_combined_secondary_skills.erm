@@ -1,0 +1,803 @@
+ZVSE2
+
+
+!#DC(SHIMY_COMBO_SKILL_CREATURE_SUMMON) = (MON_CYCLOPS_KING);
+!#DC(SHIMY_SKILL_LVL) = (SKILL_ADVANCED);
+
+  !?FU(OnStartOrLoad);
+  // setting hooks 
+  !!SN:L^EraPlugins\erm_hooker.era^/?y1;
+
+  !!if&y1<>0;
+    !!SN:Ay1/^SetHook^/?y2;
+    !!FU(shimy_CreateERMHook):Py2;
+  !!en;
+
+
+  // set FA for the necro heroes
+  !!FU(shimy_HeroClass_SkillLearnability):P8/(SKILL_FIRST_AID)/3 P9/(SKILL_FIRST_AID)/3 P5/(SKILL_RESISTANCE)/3 P8/(SKILL_ESTATES)/3 P10/(SKILL_RESISTANCE)/3 P11/(SKILL_NAVIGATION)/3 P17/(SKILL_RESISTANCE)/3;    /simi
+
+  // setting magic schools for the all classes
+  !#VA(learnAbility[4]:y); declare learnAbility array
+  !#VA(magic[4]:y); declare and init ss array
+  !!VR(magic[0]):C(SKILL_AIR_MAGIC)/(SKILL_FIRE_MAGIC)/(SKILL_WATER_MAGIC)/(SKILL_EARTH_MAGIC);
+
+  !!re (classId:y)/0/17/2; // each 2 classes (for might heroes only)
+    
+    !!VR(needToChangeLearnability:y):S(FALSE);
+    !!VR(minLearningLevel:y):S11;  is it 55% ??? btw 10 is max
+    ; loop skills
+    !!re i/0/(magic[SIZE])/1/-1;
+      !!FU(shimy_HeroClass_SkillLearnability):P(classId:y)/(magic[i])/?(learnAbility[i]); // GET each magic learnability
+      
+      !!VRl:S(learnAbility[i]);
+      !!if&l<1; if class can't learn
+        !!VR(needToChangeLearnability):S(TRUE);
+      !!el&l<(minLearningLevel:y);
+        !!VR(minLearningLevel):Sl;
+      !!en;
+    !!en;
+
+    ; loop learnability
+    !!if&(needToChangeLearnability);
+      !!re i/0/(magic[SIZE])/1/-1;
+        !!if&(learnAbility[i])<1; if skill isn't learn
+          !!FU(shimy_HeroClass_SkillLearnability):P(classId:y)/(magic[i])/(minLearningLevel:y); // SET each magic learnability
+        !!en;
+      !!en;
+    !!en;
+  !!en;
+
+  // disable SKILL_EAGLE_EYE removal for wog option
+  !!VRi^wog_103_removeEagleEye^:S(FALSE);
+
+  
+!?FU(shimy_CreateERMHook);
+  !!SN:Ex1/1/7763904/(shimy_BeforeDragonHeartSummonDragons);
+  !!SN:Ex1/1/4462046/(shimy_BeforeLuckyStrike);4415DE Melee
+  !!SN:Ex1/1/4454140/(shimy_BeforeLuckyStrike);43F6FC Range
+  !!SN:Ex1/1/4605376/(shimy_OnGoodMorale);4645C0 
+  !!SN:Ex1/1/4463507/(shimy_AfterFirstMeleeAfterRetaliation);441B93 
+  !!SN:Ex1/1/4456318/(shimy_AfterFirstShoot);43FF7E
+
+  !!SN:Ex1/1/5182789/(shimy_OnMessageBoxSkillRightClick);4F1545 
+  !!SN:Ex1/1/5205083/(shimy_OnSecondaryScreenParcePicture);004F6C5B
+  !!SN:Ex1/1/5105697/(shimy_OnHeroScreenSecondarySkillMessageBox);004DE821 
+  !!SN:Ex1/1/5218505/(shimy_OnHeroLevelUpScreenSecondarySkillMessageBox);4FA0C9 
+  !!SN:Ex1/1/5371214/(shimy_OnKingdomOverviewScreenSecondarySkillMessageBox);51F54E 
+  !!SN:Ex1/1/5964694/(shimy_OnHeroMeetingScreenSecondarySkillMessageBox);5B0396 
+  !!SN:Ex1/1/6224026/(shimy_OnUniversityScreenSecondarySkillMessageBox);5EF89A
+
+  !!SN:Ex1/1/6113249/(shimy_Town_GetCreatureGrowthText);
+  !!SN:Ex1/1/6029325/(shimy_Town_GetDwellingGrowth);
+
+
+// Setting multicast for heroes with all the schools 
+!?FU(OnSetupBattlefield);
+!#VA(skilllLvl[28]:y);
+
+// iterate combat heroes
+!!re i/0/i^battle_hero_vs_hero^;
+  //iterate hero skills
+  !!re s/0/(SEC_SKILL_LAST);
+    !!HEi^battle_hero_%i^:Ss/?(skilllLvl[s]);
+  !!en;
+
+
+  //init combat variables
+  // init extra strike
+  !!if&(skilllLvl[SKILL_ARCHERY])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_OFFENCE])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_ARMORER])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_TACTICS])>(SKILL_BASIC);
+    !!VRi^shimy_battle_hero_gives_extra_strike_%i^:S(TRUE);
+  !!en;
+
+
+  // init spells
+  !!if&(skilllLvl[SKILL_AIR_MAGIC])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_FIRE_MAGIC])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_WATER_MAGIC])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_EARTH_MAGIC])>(SKILL_BASIC);
+    !!VRi^shimy_battle_hero_has_all_magic_skills_%i^:S(TRUE);
+  !!en;
+
+
+  // init hero additinal spell damage
+  !!if&(skilllLvl[SKILL_WISDOM])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_SORCERY])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_MYSTICISM])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_INTELLIGENCE])>(SKILL_BASIC);
+    !!VRi^shimy_battle_hero_increases_spell_damage_%i^:S(TRUE);
+  !!en;
+
+  // init combat start creature summon
+  !!if&(skilllLvl[SKILL_ARTILLERY])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_BALLISTICS])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_FIRST_AID])>(SKILL_BASIC);
+    !!VRi^shimy_battle_hero_can_cummon_%i^:S(TRUE);
+  !!en;
+
+  // init morale/luck bonus defence
+  !!if&(skilllLvl[SKILL_LUCK])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_RESISTANCE])>(SKILL_BASIC)
+  /(skilllLvl[SKILL_EAGLE_EYE])>(SKILL_BASIC);
+
+    !!if&(skilllLvl[SKILL_NECROMANCY])>(SKILL_BASIC);
+      !!VRi^shimy_battle_hero_increases_stats_%i^:S2;
+
+    !!el&(skilllLvl[SKILL_LEADERSHIP])>(SKILL_BASIC);
+      !!VRi^shimy_battle_hero_increases_stats_%i^:S1;
+
+    !!en;
+  !!en;
+
+!!en;
+
+
+
+// one extra cast per turn in battle
+!?FU(OnCombatRound);
+!!re i/0/1;
+  !!VRi^shimy_battle_hero_has_casted_%i^:S(FALSE);
+!!en;
+
+!?FU(OnBattleActionEnd);
+!!BG:A?(action:y);
+
+!!FU&(action)<>(BATTLE_ACTION_HERO_CAST):E;
+
+!!re i/0/1;
+  !!VRi^shimy_battle_hero_mana_%i^:S(NULL);
+!!en;
+
+!!VR(activeSide:y):Si^battle_acting_side^;
+!!if&i^shimy_battle_hero_has_all_magic_skills_%(activeSide)^;
+
+  !!if&i^shimy_battle_hero_has_casted_%(activeSide:y)^<>(TRUE);
+    !!VRi^shimy_battle_hero_has_casted_%(activeSide:y)^:S(TRUE);
+    !!BH(activeSide:y):M0; allow cast
+
+    !!if&i^battle_isVisible^/i^battle_human_%(activeSide)^/i^battle_hero_%i(activeSide)^>(NO_HERO);
+      !!HEi^battle_hero_%(activeSide)^:A2/(ART_META_SPELLBOOK)/?(has:y)/?(equipped:y);
+
+      !!if&(equipped);
+        !!FU(H3Dlg_GetCurrentDlg):P?(h3Dlg:y);
+        !!FU(H3Dlg_SendCmdToItem):P(h3Dlg)/2008/6/16392;
+      !!en;
+    !!en;
+  !!en;
+!!en;
+
+
+
+// all units have a 25% chance for an extra strike (or shot)
+!?FU(shimy_AfterFirstMeleeAfterRetaliation);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EDI)/4/?(stack:y);
+!!FU(shimy_BattleStack_GetSide):P(stack)/?(side:y);
+!!if&i^shimy_battle_hero_gives_extra_strike_%(side)^;
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(targetStack:y);
+  !!if&(targetStack);
+    !!UN:C(targetStack)/76/4/?(numberAlive:y);
+    !!FU(shimy_BattleStack_CanAttack):P(stack)/?(result:y);
+    !!if&(numberAlive:y)>0/(result:y);
+      !!VRr:R0/0/3;
+      !!if&r=0;
+        !!UN:C6916156/4/?(speedSettings:y) Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/8/4/?(direction:y);
+        !!UN:C4463402/3/4/?(speedArrayAddr:y);
+        !!VR(offset:y):S(speedSettings) *4;
+        !!UN:C(speedArrayAddr)/(offset)/4/?(speedF:e);
+        !!VR(speed:y):S(speedF);
+        !!SN:E5212752/(CALLCONV_FASTCALL)/(speed);
+        !!SN:E4461360/(CALLCONV_THISCALL)/(stack)/(targetStack)/(direction:y);
+
+      !!en;
+    !!en;
+  !!en;
+!!en;
+
+!?FU(shimy_AfterFirstShoot);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stack:y);
+
+!!FU(shimy_BattleStack_GetSide):P(stack)/?(side:y);
+!!if&i^shimy_battle_hero_gives_extra_strike_%(side)^;
+
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBX)/4/?(targetStack:y);
+
+  !!if&(targetStack);
+    !!UN:C(stack)/76/4/?n C(targetStack)/76/4/?(numberAlive:y);
+    !!FU(shimy_BattleStack_CanAttack):P(stack)/?(result:y);
+    !!if&(numberAlive:y)>0/(result:y);
+      !!VRr:R0/0/3;
+      !!if&r=0;
+        !!SN:E4453920/(CALLCONV_THISCALL)/(stack)/(targetStack); // shoot again
+      !!en;
+    !!en;
+  !!en;
+!!en;
+
+
+// adds your current spell points to your magic damage
+!?FU(OnBeforeBattleAction);
+
+!!re i/0/i^battle_hero_vs_hero^;
+  !!if&i^shimy_battle_hero_increases_spell_damage_%i^;
+    !!HEi^battle_hero_%i^:I?i^shimy_battle_hero_mana_%i^/1;
+  !!en;
+!!en;
+
+
+!?FU(OnMagicBasicResistance);&i^shimy_battle_hero_mana^;
+!!BG:A?(action:y);                                           [get active stack #, action type]
+!!if&(action)=(BATTLE_ACTION_HERO_CAST);
+  !!UN:C(COMBAT_MANAGER)/4/?(cmbMgr:y) C(cmbMgr)/78528/4/?(activeSide:y);
+
+  !!MR:D?(basicDmg:y) S?(spellId:y);                         [get spell damage]
+  !!SS(spellId):P?(power:y);
+  !!VR(bonus:y):Si^shimy_battle_hero_mana_%(activeSide)^ *2;    /simi
+  !!if&(bonus)>0;
+    !!VR(bonusDamage:e):S(power) :100 *(bonus);
+    !!VR(newDmg:y):S(bonusDamage) +(basicDmg);
+    !!MR&(newDmg)>(basicDmg):D(newDmg);
+  !!en;
+!!en;
+
+
+
+
+
+// summon a stack of Cyclops equal to your hero lvl
+!?FU(shimy_BeforeDragonHeartSummonDragons);
+!#VA(hook:x);
+
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/?(hero:y);
+
+!!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(cmbMgr:y);
+!!UN:C(cmbMgr)/21452/4/?(attacker:y);
+
+!!VR(side:y):S(BATTLE_LEFT);
+!!if&(attacker)<>(hero);
+  !!VR(side:y):S(BATTLE_RIGHT);
+!!en;
+
+!!if&i^shimy_battle_hero_can_cummon_%(side:y)^;
+  !!UN:C(hero)/85/2/?(heroLevel:y);
+  ; Get details for summon
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y);
+
+  ; Get the values from memory and set
+  !!UN:C(cmbMgr)/78528/(UNC_INT)/?(origActiveSide:y) C(cmbMgr)/78528/(UNC_INT)/(side);
+
+  !!VR(summonedMonOffset:y):S(side) *(UNC_INT) +78504;
+  !!UN:C(cmbMgr)/(summonedMonOffset)/(UNC_INT)/?(origSummonedMon:y); [The monster summoned by Summon Elemental spell]
+
+  ; set summoned effect 1 per number passed
+  !!SS(SPELL_EARTH_ELEMENTAL):E0/?(origEff:y) E0/1;
+
+  ; Summon
+  !!VR(var:y):S(heroLevel) :10;     /simi
+  !!VR(extra:y):S(var) +1 *(var) :2;
+  !!VR(heroLevel):S(heroLevel) +(extra);
+  !!SN:E5927824/(CALLCONV_THISCALL)/(cmbMgr)/(SPELL_EARTH_ELEMENTAL)/(SHIMY_COMBO_SKILL_CREATURE_SUMMON)/(heroLevel)/0;
+
+  ; Restore values to the memory
+  !!UN:C(cmbMgr)/(summonedMonOffset)/(UNC_INT)/(origSummonedMon);
+  !!UN:C(cmbMgr)/78528/(UNC_INT)/(origActiveSide);
+
+  !!SS(SPELL_EARTH_ELEMENTAL):E0/(origEff:y);
+!!en;
+
+
+// - increase creature growth of one town by 50% 
+
+!?FU(shimy_Town_GetDwellingGrowth);                                                       [hook when game counts growth in the town]
+!#VA(hook:x);
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(town:y) C(town)/1/?(townId:y) C(town)/1/1/?(townOwner:y);
+!!if&(townOwner)<>(NO_OWNER);
+  !!FU(shimy_Town_CountPlayerBonusSet):P(townId:y)/(townOwner)/?(result:y);
+
+  !!if&(result);
+    !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/-8/4/?(growthPtr:y) C(growthPtr)/4/?(growth:y);             [Cx1/(STRUCT_HOOK_CONTEXT_EAX)/4/?(baseGrowth:y);]
+    !!VR(growth):*(result);
+    !!UN:C(ebp)/-4/2/d(growth);
+  !!en;
+!!en;
+
+
+!?FU(shimy_Town_GetCreatureGrowthText);                           ; Hook for custom growth text function
+!#VA(hook:x);                                                     ; Variable alias for hook pointer
+
+!!CM:I?(itemId:y);                                                ; Get item ID from mouse click
+!!VR(creatureSpot:y):S(itemId:y) -164;                            ; Convert item ID to creature spot
+!!VR(creatureSpot)&(creatureSpot)>7: -8;                          ; Fix for invalid click index (over limit)
+
+!!CA(CURRENT_TOWN):U?(townId:y) O?(townOwner:y) T?(townType:y);   ; Get current town info
+!!if&(townOwner)<>(NO_OWNER);                                     ; If town is owned
+  !!FU(shimy_Town_CountPlayerBonusSet):P(townId:y)/(townOwner)/?(result:y); ; Count player bonuses
+
+  !!if&(result)>0;                                                ; If any bonus exists
+    
+    ; Get the creature level from the clicked item
+    !!VR(buildId:y):S29;                                          ; Starting building ID
+    !!VR(counter:y):S0;                                           ; Reset counter
+
+    !!re (level:y)/(MON_MIN_LEVEL)/(MON_MAX_LEVEL)/1;             ; Loop through all creature levels
+      !!VR(buildId):+1;                                           ; Increment building ID
+      !!CA0/(townId):B3/(buildId);                                ; Read building data
+
+      !!if&1;
+        !!br&(counter)=(creatureSpot);                            ; Break loop if match found
+
+        !!VR(counter):+1;                                         ; Increase counter
+      !!en;
+    !!en;
+    !!FU&(level)>(MON_MAX_LEVEL):E;                               ; Exit if level exceeds max
+    !!UN:T(townType)/(level)/0/?(monType:y);                      ; Get monster type from town and level
+    !!MA:G(monType)/?(growth:y);                                  ; Get creature growth amount
+    !!if&(growth);                                                ; If growth is found
+      !!VR(growth):*(result);                                     ; Apply bonus multiplier
+      !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ECX)/4/?(currentTextPtr:y);                             [original text is in the ECX]
+      !!SN:B(currentTextPtr:y)/d/?z1 T^shimy.growth.town^/?(addedString:z)/^number^/(growth:y); [get text and interpolate to the another text-var]
+
+      !!VRz1:+(addedString:z);                                                               [add "dwelling upgrade" txt to original one]
+      !!SN:B(PTR_TEXT_BUFFER)/d/z1;                                                          [store it in the text h3 buffer]
+      !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ECX)/4/(PTR_TEXT_BUFFER);                            [redirect ecx to read h3 buffer instead original ptr]
+    !!en;
+  !!en;
+!!en;
+
+
+
+!?FU(shimy_Hero_HasIncreasedGrowthAbility);
+!#VA(heroId:x) (result:x);
+!#VA(ss[4]:y);
+
+!!VR(result):S(FALSE);
+!!HE(heroId):S(SKILL_DIPLOMACY)/?(ss[0]) S(SKILL_LEARNING)/?(ss[1]) S(SKILL_ESTATES)/?(ss[2]) S(SKILL_SCHOLAR)/?(ss[3]);
+!!if&(ss[0])>(SKILL_BASIC)/(ss[1])>(SKILL_BASIC)/(ss[2])>(SKILL_BASIC)/(ss[3])>(SKILL_BASIC);
+  !!VR(result):S(TRUE);
+!!en;
+
+!?FU(WOG_OnResetHero);
+!#VA(heroId:x);
+!!VRi^shimy_adventure_map_selected_bonus_growth_town_id_%(heroId)^:S(NULL);
+
+!?FU(shimy_Town_CountPlayerBonusSet);
+!#VA(townId:x) (playerId:x) (result:x);
+  !!VR(result:x):S(NULL);
+  !!VR(vTownId:y):S(townId) +1; // then 0 means not set
+  !!OW:H(playerId)/1;
+  !!VR(heroesNum:y):Sv1;
+  !!if&(heroesNum:y);
+    !!re i/2/(heroesNum:y)/1/1;
+      !!FU(shimy_Hero_HasIncreasedGrowthAbility):Pvi/?(hasAbility:y);
+      !!if&(hasAbility)/i^shimy_adventure_map_selected_bonus_growth_town_id_%vi^=(vTownId);
+        !!VR(result:x):+1;
+      !!en;
+    !!en;
+  !!en;
+
+
+// whenever one of your units gains luck or morale 
+// increase all your units atack by +1
+// (+2 if Necromancer since they can't get morale)
+!?FU(shimy_BeforeLuckyStrike);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stack:y);
+!!FU(shimy_BattleStack_GetSide):P(stack)/?(side:y);
+
+!!UN:C(stack)/112/4/?(isLucky:y);
+
+!!if&(isLucky:y)/i^shimy_battle_hero_increases_stats_%(side)^;
+  !!FU(shimy_IncreaseSideStats):P(side)/i^shimy_battle_hero_increases_stats_%(side)^;
+!!en;
+
+!?FU(shimy_OnGoodMorale);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EDI)/4/?(stack:y);
+!!FU(shimy_BattleStack_GetSide):P(stack)/?(side:y);
+
+!!if&i^shimy_battle_hero_increases_stats_%(side)^;
+  !!FU(shimy_IncreaseSideStats):P(side)/i^shimy_battle_hero_increases_stats_%(side)^;
+!!en;
+
+!?FU(shimy_IncreaseSideStats);
+!#VA(side:x) (value:x);
+!!VR(start:y):S(side) *(BATTLE_STACKS_PER_SIDE);
+!!VR(end:y):S(start) +(BATTLE_STACKS_PER_SIDE);
+!!re i/(start:y)/(end)/1/-1;
+  !!BMi:T?t N?n;
+  !!if&t<>(NO_MON)/n>0;
+    !!BMi:Ad(value);
+  !!en;
+!!en;
+!!if&i^battle_isVisible^;
+  !!HEi^battle_hero_%(side)^:B0/?(heroName:z);
+  !!SN:T^shimy.combat.text.stat^/?z1/^heroName^/(heroName)/^value^/(value);
+  !!BU:Mz1;
+!!en;
+
+
+// clear variables
+!?FU(OnAfterBattleUniversal);
+!!re i/0/1;
+  !!VRi^shimy_battle_hero_has_all_magic_skills_%i^:S(FALSE);
+  !!VRi^shimy_battle_hero_has_casted_%i^:S(FALSE);
+  !!VRi^shimy_battle_hero_gives_extra_strike_%i^:S(FALSE);
+  !!VRi^shimy_battle_hero_increases_spell_damage_%i^:S(FALSE);
+  !!VRi^shimy_battle_hero_can_cummon_%i^:S(FALSE);
+  !!VRi^shimy_battle_hero_increases_stats_%i^:S(NULL);
+!!en;
+
+
+!?FU(OnKeyPressed_AdvMap)&x1=(KEY_Q);
+
+
+
+// for description it should say somewhere what skill it still needs for combo and what bonuse you will recive.
+!?FU(shimy_OnMessageBoxSkillRightClick);
+
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/?(currentTextPtr:y);
+
+*!FU(shimy_Hero_GetSkillAdditionalDescription):Pd/d/?(additionalText:z);
+
+*!if&(additionalText)<>^^;
+  *!SN:B(currentTextPtr)/d/?z1;
+  *!VRz1:+(additionalText:z);
+  *!SN:B?z1/?(zVarAddr:y);
+  *!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/(zVarAddr);
+*!en;
+
+!?FU(shimy_OnSecondaryScreenParcePicture)&i^shimy_block_skill_description^=0;
+
+!!UN:C6916808/4/?(heroDlg:y);
+!!if&(heroDlg:y);
+  !#VA(picTypes[3]:y);
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/16/4/?(picTypes[0]) C(ebp)/20/4/?(picSubtype:y) C(ebp)/24/4/?(picTypes[1]) C(ebp)/32/4/?(picTypes[2]);
+  !!if&(picTypes[0])=(PIC_TYPE_SEC_SKILL)/(picTypes[1])=(NO_PIC_TYPE)/(picTypes[2])=(NO_PIC_TYPE);
+    !!UN:C6916976/4/?(hero:y);
+    !!VR(skillId:y):S(picSubtype) :3  -1;
+    !!FU(shimy_Hero_GetSkillAdditionalDescription):P(hero)/(skillId)/?(additionalText:z);
+    !!if&(additionalText:z)<>^^;
+       !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(messAddr:y);
+       !!SN:B(messAddr)/d/?z1;
+       !!VRz1:+(additionalText:z);
+       !!SN:B?z1/?(zVarAddr:y);
+       !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/(zVarAddr);
+    !!en;
+  !!en;
+!!en; 
+
+// click for selection town dlg
+!?FU(OnHeroScreenMouseClick)&999/i^mouse_action^=(MOUSE_LMB_PRESSED);
+!!VR(heroId:y):Si^mouse_hero_0^;
+!!FU(WOG_GetSkillInfoByClick):Pi^mouse_item^/(heroId:y)/?(skillId:y)/?(area:y);
+!!FU&(area:y)<>1:E;
+
+
+!!if|(skillId)=(SKILL_DIPLOMACY)
+/(skillId)=(SKILL_LEARNING)
+/(skillId)=(SKILL_ESTATES)
+/(skillId)=(SKILL_SCHOLAR);
+
+  !!FU(shimy_Hero_HasIncreasedGrowthAbility):P(heroId:y)/?(result:y);
+  !!if&(result);
+
+    !!HE(heroId):S(skillId)/?l Z?(hero:y);
+    !!SN:H^secskill^/(skillId)/l/?(description:z);
+    !!VR(picSubtype:y):S(skillId) *3 +2 +l;
+    !!FU(shimy_Hero_GetSkillAdditionalDescription):P(hero)/(skillId)/?(additionalText:z);
+    !!VR(description):+(additionalText) +^%T(shimy.growth.dialog.question)^;
+    !!VRi^shimy_block_skill_description^:S(TRUE);
+    !!IF:Q2/(PIC_TYPE_SEC_SKILL)/(picSubtype:y)/(MSG_TYPE_QUESTION)/(description);
+    !!VRi^shimy_block_skill_description^:S(FALSE);
+    !!CM:R0;
+    !!FU&-2:E;
+    !!HE(heroId:y):O?(owner:y);
+    !!OW:W(owner)/?(townsNum:y);
+    !!FU(NewIntArray):P(townsNum)/?(townsArray:y);
+
+    !!re i/0/(townsNum)/1/-1;
+      !!OW:W(owner)/i/?(townId:y);
+      !!SN:M(townsArray)/i/(townId);
+    !!en;
+    !!FU(shimy_Hero_ShowTownSelectionDlg):P(heroId:y)/(townsArray:y)/?(resultTownId:y);
+    !!if&(resultTownId:y)>0;
+      !!VRi^shimy_adventure_map_selected_bonus_growth_town_id_%(heroId:y)^:S(resultTownId); offset for non 0
+    !!en;
+
+  !!en;
+
+!!en;
+
+
+!#DC(SHIMY_DLG_TOWNS_PER_PAGE) = 10;
+
+!?FU(shimy_Hero_ShowTownSelectionDlg);
+!#VA(heroId:x) (townsArray:x) (result:x);
+!!VR(result):S(NO_TOWN);
+!!SN:M(townsArray)/?(size:y);
+
+!!if&(size);
+  !!VR(timesToShow:y):S(size) :(SHIMY_DLG_TOWNS_PER_PAGE);
+  !!VR(townsToShow:y):S(size);
+  !!VR(totalPages:y):S(timesToShow) +1;
+  !!HE(heroId):O?(heroOwner:y);
+  !!re i/0/(timesToShow);
+    !!FU(RadioDlg_Reset):P;
+
+    !!VR(pageId:y):Si+1;
+    !!SN:T^shimy.growth.dialog.title^/?(title:z)/^current^/(pageId)/^total^/(totalPages);
+    !!FU(RadioDlg_SetTitle):P(title:z);
+
+    !!re j/0/(SHIMY_DLG_TOWNS_PER_PAGE)/1/-1;
+      !!if&(townsToShow);
+        !!VR(ind:y):Si *(SHIMY_DLG_TOWNS_PER_PAGE) + j;
+        !!SN:M(townsArray)/(ind)/?(townId:y);
+        !!FU(shimy_Town_CountPlayerBonusSet):P(townId)/(heroOwner)/?(bonuses:y);
+        !!CA0/(townId):N?(townName:z);
+        !!SN:T^shimy.growth.dialog.townLine^/?(townLine:z)/^townName^/(townName)/^bonuses^/(bonuses);
+        !!VR(vTownId:y):S(townId) +1;
+        !!FU(RadioDlg_AddItem):P^%(townLine)^/(vTownId:y);
+        !!VR(townsToShow):-1;
+      !!el;
+        !!br;
+      !!en;
+    !!en;
+
+    !!if&(townsToShow);
+      !!FU(RadioDlg_AddItem):P^%T(shimy.growth.dialog.next)^/0/^^/(TRUE);    
+    !!en;
+    !!FU(RadioDlg_AddCancelButton):P;
+
+    !!FU(RadioDlg_Show):P?(resultItemId:y)/?(resultValueId:y);/?(resultTag:z);
+
+    !!if&(resultValueId);
+      !!VR(result)&(resultValueId:y)>0:S(resultValueId);
+      !!FU:E;
+    !!en;
+  !!en;
+!!el;
+  !!IF:M^%T(shimy.growth.dialog.error.noTowns)^;
+!!en;
+
+
+
+!?FU(shimy_OnHeroLevelUpScreenSecondarySkillMessageBox);4FA0C9
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/?(currentTextPtr:y);
+
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(mouse:y) C(mouse)/8/4/?(itemId:y);
+!!VR(itemId):+2010; // idk why game handles it that way 
+!!UN:C6919812/4/?(dlg:y);
+!!VR(skillId:y):S(NO_SKILL);
+!!if|(itemId)=4020/(itemId)=4022; // left skill click
+  !!UN:C(dlg)/96/4/?(skillId);
+!!el|(itemId)=4021/(itemId)=4023; // right skill click
+  !!UN:C(dlg)/100/4/?(skillId);
+!!el;
+  !!FU:E;
+!!en;
+
+
+!!if&(skillId)<>(NO_SKILL);
+  !!VR(skillId:y)::3 -1;
+
+  !!HE(CURRENT_HERO):Z?(hero:y);
+  !!FU(shimy_Hero_GetSkillAdditionalDescription):P(hero)/(skillId)/?(additionalText:z);
+
+  !!if&(additionalText)<>^^;
+    !!SN:B(currentTextPtr)/d/?z1;
+    !!VRz1:+(additionalText:z);
+    !!SN:B?z1/?(zVarAddr:y);
+    !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/(zVarAddr);
+  !!en;
+!!en;
+
+
+!?FU(shimy_OnKingdomOverviewScreenSecondarySkillMessageBox);51F54E
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/?(currentTextPtr:y);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(hero:y);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/8/4/?(itemId:y);
+!!VR(itemId):-158;
+
+!!VR(savedV1:y):Sv1;
+!!SN:E5121552/(CALLCONV_THISCALL)/(hero)/(itemId);
+!!VR(skillId:y):Sv1;
+!!VRv1:S(savedV1);
+!!FU(shimy_Hero_GetSkillAdditionalDescription):P(hero)/(skillId)/?(additionalText:z);
+
+!!if&(additionalText)<>^^;
+  !!SN:B(currentTextPtr)/d/?z1;
+  !!VRz1:+(additionalText:z);
+  !!SN:B?z1/?(zVarAddr:y);
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/(zVarAddr);
+!!en;
+
+!?FU(shimy_OnHeroMeetingScreenSecondarySkillMessageBox);5B0396
+
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/-12/4/?(heroSide:y);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBX)/4/?(swapMgr:y);
+!!VR(offset:y):S(heroSide:y) *4 +64;
+!!UN:C(swapMgr)/(offset)/4/?(hero:y);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_EDX)/4/?(skillId:y);
+
+!!FU(shimy_Hero_GetSkillAdditionalDescription):P(hero)/(skillId)/?(additionalText:z);
+
+!!if&(additionalText)<>^^;
+  !!SN:B6911016/d/?z1;
+  !!VRz1:+(additionalText:z);
+  !!SN:B6911016/d/z1;
+  !!SN:B?z1/?(zVarAddr:y);
+!!en;
+
+!?FU(shimy_OnUniversityScreenSecondarySkillMessageBox);
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/?(currentTextPtr:y) Cx1/(STRUCT_HOOK_CONTEXT_EAX)/4/?(eax:y);
+
+!!VR(skillId:y):S(eax) Sd>>4;
+!!HE(CURRENT_HERO):Z?(hero:y);
+!!FU(shimy_Hero_GetSkillAdditionalDescription):P(hero)/(skillId)/?(additionalText:z);
+!!if&(additionalText:z)<>^^;
+  !!SN:B(currentTextPtr)/d/?z1;
+  !!VRz1:+(additionalText:z);
+  !!SN:B?z1/?(zVarAddr:y);
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/(zVarAddr);
+!!en;
+
+!?FU(shimy_Hero_GetSkillAdditionalDescription);
+!#VA(hero:x) (skillId:x) (result:x) (showExtraDlg:x);
+
+!#VA(ss[28]:y);
+!!VR(additionalText:z):S^^;
+!!FU|(skillId)<(SEC_SKILL_FIRST)/(skillId)>(SEC_SKILL_LAST);
+!!VR(showExtraDlg:x):S(FALSE);
+!!if&(hero);
+  // get hero's SS
+  !!VR(heroSSPtr:y):S(hero)+201;
+
+  !!re i/0/(ss[SIZE])/1/-1;
+    !!UN:C(heroSSPtr)/i/1/?(ss[i]);
+  !!en;
+
+  !#VA(descriptionKey:z);
+  !!FU(NewIntArray):P?(requiredSkills:y);
+
+  // init spells
+  !!if|(skillId)=(SKILL_AIR_MAGIC)
+  /(skillId)=(SKILL_FIRE_MAGIC)
+  /(skillId)=(SKILL_WATER_MAGIC)
+  /(skillId)=(SKILL_EARTH_MAGIC);
+    !!VR(descriptionKey):S^extraCast^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_AIR_MAGIC)/(SKILL_FIRE_MAGIC)/(SKILL_WATER_MAGIC)/(SKILL_EARTH_MAGIC);
+
+  // init extra strike
+  !!el|(skillId)=(SKILL_ARCHERY)
+  /(skillId)=(SKILL_OFFENCE)
+  /(skillId)=(SKILL_ARMORER)
+  /(skillId)=(SKILL_TACTICS);
+    !!VR(descriptionKey):S^extraStrike^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_ARCHERY)/(SKILL_OFFENCE)/(SKILL_ARMORER)/(SKILL_TACTICS);
+
+
+  // init range visit
+  !!el|(skillId)=(SKILL_LOGISTICS)
+  /(skillId)=(SKILL_PATHFINDING)
+  /(skillId)=(SKILL_SCOUTING)
+  /(skillId)=(SKILL_NAVIGATION);
+    !!VR(descriptionKey):S^rangeVisit^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_LOGISTICS)/(SKILL_PATHFINDING)/(SKILL_SCOUTING)/(SKILL_NAVIGATION);
+
+  // init hero additinal spell damage
+  !!el|(skillId)=(SKILL_WISDOM)
+  /(skillId)=(SKILL_SORCERY)
+  /(skillId)=(SKILL_MYSTICISM)
+  /(skillId)=(SKILL_INTELLIGENCE);
+    !!VR(descriptionKey):S^spellDamage^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_WISDOM)/(SKILL_SORCERY)/(SKILL_MYSTICISM)/(SKILL_INTELLIGENCE);
+
+  // init combat start creature summon
+  !!el|(skillId)=(SKILL_ARTILLERY)
+  /(skillId)=(SKILL_BALLISTICS)
+  /(skillId)=(SKILL_FIRST_AID);
+    !!VR(descriptionKey):S^combatSummon^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_ARTILLERY)/(SKILL_BALLISTICS)/(SKILL_FIRST_AID);
+
+  // init extra growth
+  !!el|(skillId)=(SKILL_DIPLOMACY)
+  /(skillId)=(SKILL_LEARNING)
+  /(skillId)=(SKILL_ESTATES)
+  /(skillId)=(SKILL_SCHOLAR);
+    !!VR(descriptionKey):S^extraGrowth^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_DIPLOMACY)/(SKILL_LEARNING)/(SKILL_ESTATES)/(SKILL_SCHOLAR);
+    !!VR(showExtraDlg:x):S(TRUE);
+  // init morale/luck bonus defence
+  !!el|(skillId)=(SKILL_LUCK)
+  /(skillId)=(SKILL_RESISTANCE)
+  /(skillId)=(SKILL_EAGLE_EYE)
+    /(skillId)=(SKILL_LEADERSHIP)
+  /(skillId)=(SKILL_NECROMANCY);
+
+
+    // check what skill add into skills array
+    !!VR(skillToAdd:y):S(SKILL_LEADERSHIP);
+    !!if&(skillId)=(SKILL_NECROMANCY);
+      !!VR(skillToAdd:y):S(SKILL_NECROMANCY);
+
+    !!el&(skillId)<>(SKILL_LEADERSHIP);
+      ; if we don't click any of above
+      ; chech if we have ot may have it
+
+      !!if&(ss[SKILL_NECROMANCY]);
+        !!VR(skillToAdd:y):S(SKILL_NECROMANCY);
+
+      !!el&(ss[SKILL_LEADERSHIP])=(SKILL_NOT_LEARNED);
+        !!UN:C(hero)/48/4/?(classId:y);
+        !!FU(shimy_HeroClass_SkillLearnability):P(classId)/(SKILL_NECROMANCY)/?(mayLearnNecromancy:y);
+        !!VR(skillToAdd:y)&(mayLearnNecromancy:y)>0:S(SKILL_NECROMANCY);
+      !!en;
+    !!en;
+
+    !!VR(descriptionKey):S^extraDefence^;
+    !!FU(Array_Push):P(requiredSkills)/(SKILL_LUCK)/(SKILL_RESISTANCE)/(SKILL_EAGLE_EYE)/(skillToAdd);
+  !!en;
+
+
+  // build up skill description
+  !!if&(descriptionKey)<>^^;
+    !!UN:P75/?(shortSkillText:y);           [Check for short skill text option]
+    !!VR(descriptionFormat:z):S^full^;
+    !!if&(shortSkillText);
+        !!VR(descriptionFormat:z):S^short^;
+    !!en;
+    !!FU(Array_Sort):P(requiredSkills);
+    !!SN:T^shimy.ss.%(descriptionFormat:z).%(descriptionKey)^/?(additionalText:z);
+    !!SN:M(requiredSkills)/?(size:y);
+    !!if&(size);
+      !!SN:T^shimy.ss.%(descriptionFormat).needAdvanced^/?(advanceText:z);
+      !!VR(additionalText):+(advanceText:z);
+
+      !!VR(skillRowText:z):S^^;
+      !!VR(lastItemInd:y):S(size) -1;
+      !!re i/0/(lastItemInd);
+        !!SN:M(requiredSkills)/i/?s;
+        !!VR(formatKey:z):S^shimy.ss.format.needed^;
+        
+        !!if&(ss[s])>=(SKILL_ADVANCED);
+          !!VR(formatKey:z):S^shimy.ss.format.advanced^;
+        !!el&(ss[s])=(SKILL_BASIC);
+          !!VR(formatKey:z):S^shimy.ss.format.learnt^;
+        !!en;
+
+
+        !!SN:H^secskill^/s/0/?(skillName:z);
+
+        !!FU(StrReplace):P(skillName)/^{^/^^/?(skillName) P(skillName)/^}^/^^/?(skillName); //remove colors from skillname
+
+        !!SN:T^%(formatKey:z)^/?(skillLine:z)/^skillName^/(skillName);
+
+        !!if&i<>(lastItemInd);
+          !!VR(skillRowText:z):+(skillLine:z) +^%T(wog.comma)^;
+
+        !!el;
+          !!VR(skillRowText:z):+(skillLine:z) +^%T(wog.period)^;
+        !!en;
+
+      !!en;
+      !!VR(additionalText):+(skillRowText:z);
+
+    !!en;
+    !!if&(descriptionKey)=^extraGrowth^;
+      !!UN:C(hero)/26/4/?(heroId:y) C(hero)/34/1/?(owner:y);
+
+      !!if&i^shimy_adventure_map_selected_bonus_growth_town_id_%(heroId)^;
+        !!VR(townId:y):Si^shimy_adventure_map_selected_bonus_growth_town_id_%(heroId)^ -1;
+        !!CA0/(townId):N?(townName:z);
+        !!SN:T^shimy.growth.currentTown^/?(msg:z)/^townName^/(townName:z);
+        !!VR(additionalText):+(msg:z);
+      !!el;
+        !!VR(additionalText):+^%T(shimy.growth.noTown)^;
+      !!en;
+    !!en;
+
+  !!en;
+!!en;
+
+!!VR(result:x):Z(additionalText);
+

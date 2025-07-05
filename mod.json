@@ -1,0 +1,38 @@
+{
+	"caption": {
+		"en_US": "Combo Skills - ShimmY",
+		"ru_RU": "Комбинированные Вторичные Навыки - ShimmY",
+		"ua_UA": ""
+	},
+	"description": {
+		"full": {
+			"en_US": "readme.md",
+			"ru_RU": "readme_ru.md",
+			"ua_UA": ""
+		},
+		"short": {
+			"en_US": "",
+			"ru_RU": "",
+			"ua_UA": ""
+		}
+	},
+	"author": "daemon_n, idea: ShimmY",
+	"homepage": "https://github.com/ERA-Projects/ShimmY-combined-secondary-skills",
+	"icon": {
+		"file": "icon.ico",
+		"index": 0
+	},
+	"mod_version": "1.0",
+	"priority": 0,
+	"compatibility": {
+		"class": "default",
+		"entries": {},
+		"requires":[
+		"WoG Scripts"
+		]
+	},
+	"platform": "era",
+	"info_version": "1.0",
+	"plugins": {},
+	"category": "gameplay"
+}

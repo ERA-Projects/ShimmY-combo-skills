@@ -1,0 +1,355 @@
+ZVSE2
+-----------------------------------------------------------------------------------------
+; Note: Behaviour after entering objects can be configured with FU(WOG_23_OnAfterEnterObject)
+Logistics + Pathfinding + Scouting + Navigation
+- you can visit objects from afar (Sorcery I from wog scripts)
+- also disable script at game start in case it is activated
+
+
+!?FU(shimy_CreateERMHook);
+!#VA(address:x);
+
+!!UN:P23/0;
+!!SN:E(address)/1/4383184/(shimy_AI_OnSelectTartgetToMove);
+
+-----------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------
+
+!?FU(shimy_GetObjectToSetAsVisited);
+!#VA(objType:x) (result:x);
+
+!!VR(result):S(FALSE);
+
+!!if&(objType)=>88/(objType)<=90|(objType)=(OBJ_WITCH_HUT)/(objType)=(OBJ_TREE_OF_KNOWLEDGE)/(objType)=(OBJ_CREATURE_BANK)/(objType)=(OBJ_CRYPT) 
+    /(objType)=(OBJ_DRAGON_UTOPIA)/(objType)=(OBJ_DERELICT_SHIP)/(objType)=(OBJ_SHIPWRECK)/(objType)=(OBJ_UNIVERSITY);
+  !!VR(result):S(TRUE);
+!!en;
+
+!?FU(shimy_Hero_HasRemoteVisitAbility);
+!#VA(heroId:x) (result:x);
+!#VA(ss[4]:y);
+
+!!VR(result):S(FALSE);
+!!HE(heroId):S(SKILL_LOGISTICS)/?(ss[0]) S(SKILL_PATHFINDING)/?(ss[1]) S(SKILL_SCOUTING)/?(ss[2]) S(SKILL_NAVIGATION)/?(ss[3]);
+!!if&(ss[0])>(SKILL_BASIC)/(ss[1])>(SKILL_BASIC)/(ss[2])>(SKILL_BASIC)/(ss[3])>(SKILL_BASIC);
+  !!VR(result):S(TRUE);
+!!en;
+
+!?FU(shimy_AI_OnSelectTartgetToMove);
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/-116/4/?(xyz:y) C(ebp)/-32/4/?(hero:y);
+
+  !!if&(hero);
+    !!UN:C(hero)/26/4/?(heroId:y);
+    !!if&(heroId)>(NO_HERO)/(heroId)<=(HERO_LAST_WOG);
+
+      !!FU(shimy_Hero_HasRemoteVisitAbility):P(heroId)/?(result:y);
+      !!if&(result);
+        
+        !!UN:C(ebp)/-116/4/?(xyz:y) C(hero)/34/2/?(heroOwner:y);
+        !!FU(WOG_UnPackedCoords):P?(x:y)/?(y:y)/?(z:y)/(xyz);
+
+        !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBX)/4/?(ebx:y) C(ebx)/30/4/?t;
+        !!FU(shimy_GetObjectToSetAsVisited):Pt/?(setAsVisited:y);
+
+        !!if&(setAsVisited);
+          !!HE(heroId):P?(hX:y)/?(hY:y)/?(hZ:y);
+          !!FU&(hZ)<>(z):E;
+          !!FU(shimy_Hero_CanReachObject):P(heroId)/(x)/(y)/(z)/?(result:y);
+          !!if&(result);
+            !!FU(WOG_AdvMgr_SetObjectAsVisited):P(x)/(y)/(z)/(heroOwner);
+          !!en;
+
+        !!el|t=(OBJ_MYSTICAL_GARDEN)
+        /t=(OBJ_LEARNING_STONE)
+        /t=(OBJ_STAR_AXIS)
+        /t=(OBJ_MERCENARY_CAMP)
+        /t=(OBJ_WINDMILL)
+        /t=(OBJ_WATER_WHEEL)
+        /t=(OBJ_GARDEN_OF_REVELATION)
+        /t=(OBJ_MARLETTO_TOWER)
+        /t=(OBJ_FOUNTAIN_OF_FORTUNE)
+        /t=(OBJ_FAERIE_RING)
+        /t=(OBJ_TEMPLE)
+        /t=(OBJ_IDOL_OF_FORTUNE)
+        /t=(OBJ_BUOY)
+        /t=(OBJ_MERMAID);
+          !!HE(heroId):P?(hX:y)/?(hY:y)/?(hZ:y);
+          !!FU&(hZ)<>(z):E;
+          !!FU(shimy_Hero_CanReachObject):P(heroId)/(x)/(y)/(z)/?(result:y);
+          !!if&(result);
+            !!FU(WOG_AdvMgr_GetMapItem):P(x)/(y)/(z)/?(mapItem:y);
+            !!HE(heroId):Z?(hero:y) Wd1/1;
+            !!UN:C(ADV_MANAGER)/4/?(advMgr:y);
+            !!SN:E4901264/(CALLCONV_THISCALL)/(advMgr)/(mapItem)/(hero)/(xyz);
+            !!FU(WOG_23_OnAfterEnterObject):P(x)/(y)/(z)/t/(heroOwner); [This function would be called by 3rd party scripts]
+          !!en;
+        !!en;
+      !!en;
+    !!en;
+  !!en;
+
+
+-----------------------------------------------------------------------------------------
+
+
+!?FU(OnAdventureMapRightMouseClick_Quit)&i^artefact_helper_p^;
+  !!VRi^artefact_helper^:Si^artefact_helper_p^;
+  !!VRi^artefact_helper_p^:S(FALSE);
+
+ [Start of CM trigger]
+!?FU(OnAdventureMapRightMouseClick)&i^mouse_item^=(ITEM_ADVMAP_ADVENTURE_MAP)/999;
+  !!OW:C?y99/?(clickedPlayer:y) A(clickedPlayer)/?(activeHero:y);                            [added ability for mp]
+
+  !!if&(activeHero)<>(NO_HERO);
+    !!CM:P?(x:y)/?(y:y)/?(z:y);
+
+    !!HE(activeHero):P?(hX:y)/?(hY:y)/?(hZ:y);
+    !!FU(shimy_Hero_HasRemoteVisitAbility):P(activeHero)/?(result:y);
+    !!if&(result);
+      !!FU&(x)=(hX)/(y)=(hY)|(z)<>(hZ):E;
+
+      !!SN:O?(x:y)/?(y:y)/?(z:y);                                                            [Get the coordinate of the entrance]
+      !!FU(shimy_Hero_CanReachObject):P(activeHero)/(x)/(y)/(z)/?(result:y);
+
+      !!if&(result);
+        !!FU(shimy_RemoteObjectVisit_MainProcedure):P(x)/(y)/(z)/(activeHero);
+      !!en;
+    !!en;
+  !!en;
+
+-----------------------------------------------------------------------------------------
+; Warning: Mixing classic z vars and name z vars in the fowlling funciton, could that have a problem?
+!?FU(shimy_RemoteObjectVisit_MainProcedure);  
+!#VA(x:x) (y:x) (z:x) (heroId:x);
+
+  !!OB(x)/(y)/(z):H?(customHint:y) T?(objType:y) U?(objSubtype:y) C?(cWord:y);               [Get object type, subtype and control word]
+  !!FU&(customHint)/(objType)<>(OBJ_ARTIFACT):E;                                             [Skip control word check for artifact for mod compatibility]
+
+  !!if&(objType)>0/(objType)<>(OBJ_HERO);
+    !!FU(shimy_GetObjectToSetAsVisited):P(objType)/?(setAsVisited:y);
+    !!HE(heroId):O?(heroOwner:y) Z?(hero:y);
+
+    !!if&(setAsVisited:y);
+      !!FU(WOG_AdvMgr_SetObjectAsVisited):P(x)/(y)/(z)/(heroOwner);
+
+    !!el;                             [only active player can visit !]
+        // Section of the ingenious remote visit feature by daemon_n
+      !!VR(pic:y):S(NO_PIC_TYPE);
+      !!VR(value:y):S(NO_PIC_TYPE);
+      !!VR(pic2:y):S(NO_PIC_TYPE);
+      !!VR(value2:y):S(NO_PIC_TYPE);
+      !!UN:C(hero)/261/4/?(flags:y);
+      !!VR(onBoat:y):S(flags) &(BIT_18);
+      !!VR(owner:y):Si^timerOwner^;
+
+      !!if&(objType)=(OBJ_LEARNING_STONE);
+        !!HE(heroId):V0/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(pic):S(PIC_TYPE_EXPERIENCE);
+          !!FU(WOG_23_HeroGetLearningStoneExperience):P(heroId)/?(value);
+        !!en;
+
+      !!el&(objType)=(OBJ_STAR_AXIS);
+        !!HE(heroId):V4/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(pic):S(PIC_TYPE_SKILL_POWER);
+          !!VR(value):S1;
+        !!en;
+
+      !!el&(objType)=(OBJ_MERCENARY_CAMP);
+        !!HE(heroId):V3/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(pic):S(PIC_TYPE_SKILL_ATTACK);
+          !!VR(value):S1;
+        !!en;  
+
+      !!el&(objType)=(OBJ_GARDEN_OF_REVELATION);
+        !!HE(heroId):V2/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(pic):S(PIC_TYPE_SKILL_KNOWLEDGE);
+          !!VR(value):S1;
+        !!en;
+
+      !!el&(objType)=(OBJ_MARLETTO_TOWER);
+        !!HE(heroId):V1/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(pic):S(PIC_TYPE_SKILL_DEFENSE);
+          !!VR(value):S1;
+        !!en;
+
+      !el&(objType)=(OBJ_FOUNTAIN_OF_YOUTH);
+        !VR(visit:y):S(flags) &(BIT_14);
+        !if&(visit)=0;
+          !VR(pic):S(PIC_TYPE_MORALE_POSITIVE);
+          !VR(value):S1;          
+        !en;
+
+      !!el&(objType)=(OBJ_FOUNTAIN_OF_FORTUNE);
+        !!VR(negativeLuck:y):S(flags) &(BIT_5);
+        !!VR(positiveLuck:y):S(flags) &939524096;
+
+        !!if&(negativeLuck)=0/(positiveLuck)=0;
+          !!VR(fountainLuck:y):S(cWord) Sd>>13 &(BITS_3_MASK);
+          !!VR(pic):S(PIC_TYPE_LUCK_POSITIVE);
+          !!if&(fountainLuck)=7;
+            !!VR(pic):S(PIC_TYPE_LUCK_NEGATIVE);
+            !!VR(fountainLuck):S1;
+          !!en;
+          !!VR(value):S(fountainLuck);
+        !!en;
+
+      !!el&(objType)=(OBJ_FAERIE_RING);
+        !!VR(visit:y):S(flags) &(BIT_13);
+        !!if&(visit)=0;
+          !!VR(pic):S(PIC_TYPE_LUCK_POSITIVE);
+          !!VR(value):S1;
+        !!en;
+
+      !el&(objType)=(OBJ_RALLY_FLAG);
+        !VR(visit:y):S(flags) &(BIT_16);
+        !if&(visit)=0;
+          !VR(pic):S(PIC_TYPE_MORALE_POSITIVE);
+          !VR(value):S1;
+          !VR(pic2):S(PIC_TYPE_LUCK_POSITIVE);
+          !VR(value2):S1;
+        !en;
+
+      !el&(objType)=(OBJ_OASIS);
+        !VR(visit:y):S(flags) &(BIT_7);
+        !if&(visit)=0;
+          !VR(pic):S(PIC_TYPE_MORALE_POSITIVE);
+          !VR(value):S1;
+        !en;
+
+      !el&(objType)=(OBJ_SWAN_POND);
+        !VR(visit:y):S(flags) &(BIT_3);
+        !if&(visit)=0;
+          !VR(pic):S(PIC_TYPE_LUCK_POSITIVE);
+          !VR(value):S2;
+        !en;
+
+      !!el&(objType)=(OBJ_TEMPLE);
+        !!VR(templeMorale:y):S(flags) &67109120;
+        !!if&(templeMorale:y)=0;
+          !!UN:C(GAME_MANAGER)/4/?(gameMgr:y) C(gameMgr)/128574/2/?(dayOfWeek:y);
+          !!VR(pic):S(PIC_TYPE_MORALE_POSITIVE);
+          !!VR(value):S1;
+          !!if&(dayOfWeek)=7;
+            !!VR(value):S2;
+          !!en;
+        !!en;
+
+      !!el&(objType)=(OBJ_IDOL_OF_FORTUNE);
+        !!VR(idolLuck:y):S(flags) &(BIT_4);
+        !!VR(idolMorale:y):S(flags) &(BIT_25);
+        !!if&(idolLuck)=0/(idolMorale)=0; // bonus isn't set from any of days
+          !!VR(value):S1;
+
+          !!UN:C(GAME_MANAGER)/4/?(gameMgr:y) C(gameMgr)/128574/2/?(dayOfWeek:y);
+          !!if&(dayOfWeek)=7;
+            !!VR(pic):S(PIC_TYPE_LUCK_POSITIVE);
+            !!VR(pic2):S(PIC_TYPE_MORALE_POSITIVE);
+            !!VR(value2):S1;
+          !!el;
+            !!VR(isOdd:y):S(dayOfWeek) &1;
+            !!if&(isOdd);
+              !!VR(pic):S(PIC_TYPE_LUCK_POSITIVE);
+            !!el;
+              !!VR(pic):S(PIC_TYPE_MORALE_POSITIVE);
+            !!en;
+          !!en;
+        !!en;
+
+      !!el&(objType)=(OBJ_WINDMILL);
+        !!ML(x)/(y)/(z):B?(pic)/?(value);
+        !!PO(x)/(y)/(z):O?(owner:y);
+
+      !!el&(objType)=(OBJ_WATER_WHEEL);
+        !!WM(x)/(y)/(z):B?(value);
+        !!VR(pic):S(RES_GOLD);
+        !!VR(value):*500;
+        !!PO(x)/(y)/(z):O?(owner:y);
+
+      !!el&(objType)=(OBJ_MYSTICAL_GARDEN);
+        !!GD(x)/(y)/(z):T?(hasRes:y) B?(pic) N?(id:y);[Check Garden's bonus type (y1) and resource type (y2)]
+        !!PO(x)/(y)/(z):O?(owner:y);
+
+        !!if&(hasRes);
+          !!VR(value):S5;
+          !!VR(value)&(pic)=(RES_GOLD):*100;
+        !!el;
+          !!GD(x)/(y)/(z):N?(id:y);[Check Garden's bonus type (y1) and resource type (y2)]
+          !!UN:C6933756/4/?(activePlayer:y) C(activePlayer)/184/4/?(visitedGardensBitset:y);
+          !!VR(bit:y):S1 Sd<<(id);
+          !!VR(visitedGardensBitset:y):&(bit);
+          !!if&(visitedGardensBitset)=0;
+            !!UN:C(activePlayer)/184/4/d|(bit:y);
+          !!en;
+        !!en;
+
+      !!el&(objType)=(WOG_OBJ_WAREHOUSE); warehouse objects support added 
+        !!VR(pic):S(cWord) &(BITS_5_MASK);
+        !!VR(value):S(cWord) Sd>>13 &(BITS_10_MASK);
+
+        !!if&(pic)=(RES_MITHRIL); // replace pic with gold if there is no mithril
+          !!UN:B0/?(mithrilEnabled:y);
+          !!if&(mithrilEnabled)=(FALSE);
+            !!VR(pic):S(RES_GOLD);
+          !!en;
+        !!en;
+
+        !!if&(pic)=(RES_GOLD);
+          !!VR(value):*500;
+        !!en;
+      !!el&(onBoat:y);
+        !!if&(objType)=(OBJ_BUOY);
+          !!VR(visit:y):S(flags) &(BIT_2);
+          !!if&(visit)=0;
+            !!VR(pic):S(PIC_TYPE_MORALE_POSITIVE);
+            !!VR(value):S1;
+          !!en;
+
+        !!el&(objType)=(OBJ_MERMAID);
+          !!VR(visit:y):S(flags) &(BIT_15);
+          !!if&(visit)=0;
+            !!VR(pic):S(PIC_TYPE_LUCK_POSITIVE);
+            !!VR(value):S1;
+          !!en;
+        !!en;
+
+      !!en;
+
+      !!if&(owner)<>i^timerOwner^|(value)>0;<>(NO_PIC_TYPE);                       [;]
+        !!VR(value:y)&(value)<0:S(NULL);
+        !!CM:R(FALSE);
+        !!FU(shimy_VisitObjectRemote):P(x)/(y)/(z)/(heroId)/(pic)/(value)/(pic2)/(value2);
+      !!el&(value)<>(NO_PIC_TYPE);
+        !!FU(WOG_AdvMgr_SetObjectAsVisited):P(x)/(y)/(z)/(heroOwner);
+      !!en;
+    !!en;
+  !!en;
+-----------------------------------------------------------------------------------------
+
+!?FU(WOG_23_HeroGetLearningStoneExperience);
+!#VA(heroId:x) (result:x);
+  !!UN:C6546672/4/?e2;                            [get stone exp]
+  !!HE(heroId):Z?(hero:y);
+  !!SN:E5130928/(CALLCONV_THISCALL_FLOAT)/(hero); [get hero learning power and store value to e1]
+  !!VRe1:*e2;
+  !!VR(result):Se1;
+
+-----------------------------------------------------------------------------------------
+!?FU(shimy_VisitObjectRemote)&999;
+!#VA(x:x) (y:x) (z:x) (heroId:x) (pic:x) (value:x) (pic2:x) (value2:x);
+  !!OB(x)/(y)/(z):T?(objType:y);
+  !!HE(heroId:x):B0/?(heroName:z);
+  !!FU(WOG_GetObjectName):P(objType)/?(objName:z);
+  !!SN:T^shimy.visit.text^/?(msg:z)/^objName^/(objName)/^heroName^/(heroName);
+  !!IF:Q2/(pic)/(value)/(pic2)/(value2)/(MSG_TYPE_QUESTION)/(msg);
+  !!if&2;
+    !!FU(shimy_AdvMgr_PlayerHeroEnterObject):Px1/x2/x3/x4; [visit object with hero]
+    !!FU(WOG_23_OnAfterEnterObject):P(x)/(y)/(z)/(objType)/i^timerOwner^; [This function would be called by 3rd party scripts]
+  !!en;
+
+** End of Script **
