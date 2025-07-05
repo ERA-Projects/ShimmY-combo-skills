@@ -5,6 +5,7 @@ Logistics + Pathfinding + Scouting + Navigation
 - you can visit objects from afar (Sorcery I from wog scripts)
 - also disable script at game start in case it is activated
 
+!#DC(WOG_OBJ_WAREHOUSE) = 142;
 
 !?FU(shimy_CreateERMHook);
 !#VA(address:x);
