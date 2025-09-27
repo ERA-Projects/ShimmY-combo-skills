@@ -326,7 +326,8 @@ Logistics + Pathfinding + Scouting + Navigation
         !!CM:R(FALSE);
         !!FU(shimy_VisitObjectRemote):P(x)/(y)/(z)/(heroId)/(pic)/(value)/(pic2)/(value2);
       !!el&(value)<>(NO_PIC_TYPE);
-        !!FU(WOG_AdvMgr_SetObjectAsVisited):P(x)/(y)/(z)/(heroOwner);
+        // should be removed cause it breaks mapitem setup 
+        *!FU(WOG_AdvMgr_SetObjectAsVisited):P(x)/(y)/(z)/(heroOwner);
       !!en;
     !!en;
   !!en;
