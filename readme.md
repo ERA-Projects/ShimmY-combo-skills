@@ -20,7 +20,7 @@ All heroes can learn all secondary skills (except necromancy/leadership).
 
 ### 🗺️ **Explorer**
 **Required Skills:** Logistics + Pathfinding + Scouting + Navigation  
-**Effect:** You can visit objects from afar and get more information when right-clicking
+**Effect:** Effect: Visit objects from afar and increase treasure chest gold/exp by 500
 
 ---
 
