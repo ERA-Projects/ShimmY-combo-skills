@@ -2,6 +2,8 @@ ZVSE2
 
 !#DC(SIZEOF_HEROTYPE_STRUCT) =64;
 
+!?FU(OnBeforeBattleAction);
+!!BG:A?i^shimy_battle_action^;
 
 !?FU(shimy_HeroClass_SkillLearnability);
 !#VA(classId:x) (skillId:x) (chance:x);
@@ -93,3 +95,32 @@ ZVSE2
     !!UN:Ci/4882831/(UNC_INT8)/(storedOpp[i]);
   !!en;
 !!en;
+
+!?FU(shimy_BattleStack_HasArtifactEffect);
+!#VA(stack:x) (artId:x) (result:x);
+!!VR(savedV1:y):Sv1;
+
+!!SN:E4465584/(CALLCONV_THISCALL)/(stack);
+!!VR(hero:y):Sv1;
+!!if&(hero:y);
+  !!SN:E5084256/(CALLCONV_THISCALL)/(hero:y)/(artId);
+  !!VR(result:x):Sv1;
+!!en;
+!!VRv1:S(savedV1:y);
+
+!?FU(shimy_Player_GetHeroesList);
+!#VA(playerID:x) (array:x);
+  !!VR(array):S-1;
+
+  !!OW:H(playerID)/1;
+  !!VR(heroNum:y):Sv1;
+  !!if&(heroNum:y);
+    !!FU(NewIntArray):P(heroNum:y)/?(array);
+
+    !!re i/2/(heroNum:y)/1/1;
+      !!VR(id:y):Si -2;
+      !!SN:M(array)/(id:y)/vi;
+    !!en;
+
+    !!SN:F^ExtendArrayLifetime^/(array);
+  !!en;

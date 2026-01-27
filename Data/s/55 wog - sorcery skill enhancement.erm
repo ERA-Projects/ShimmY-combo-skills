@@ -37,7 +37,18 @@ Logistics + Pathfinding + Scouting + Navigation
   !!VR(result):S(TRUE);
 !!en;
 
-!?FU(shimy_AI_OnSelectTartgetToMove);
+!?OB(OBJ_TREASURE_CHEST)/0;     /simi
+!!HE(CURRENT_HERO):S(SKILL_SCOUTING)/?(scouting:y) S(SKILL_LOGISTICS)/?(logistics:y) S(SKILL_PATHFINDING)/?(pathfinding:y) S(SKILL_NAVIGATION)/?(navigation:y);
+!!if&(scouting)>(SKILL_BASIC)/(logistics)>(SKILL_BASIC)/(pathfinding)>(SKILL_BASIC)/(navigation)>(SKILL_BASIC);
+  !!CH998:S?(chestType:y);    [1 - bonus type (0-gold/experience)]
+  !!if&(chestType)=0;         [if there is gold/experience in the chest]
+    !!CH998:B?(ammount:y);    [2 - amount of gold/experience (0-15)]
+    !!VR(finalAmm:y):S(ammount) +1 F1/15; [3 - increased amount of gold/experience... ...but not more than 15]
+    !!CH998:B(finalAmm);      [updating reward parameters in the chest]
+  !!en;
+!!en;
+
+!?FU(shimy_AI_OnSelectTartgetToMove);Z
   !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/-116/4/?(xyz:y) C(ebp)/-32/4/?(hero:y);
 
   !!if&(hero);
@@ -50,8 +61,9 @@ Logistics + Pathfinding + Scouting + Navigation
         !!UN:C(ebp)/-116/4/?(xyz:y) C(hero)/34/2/?(heroOwner:y);
         !!FU(WOG_UnPackedCoords):P?(x:y)/?(y:y)/?(z:y)/(xyz);
 
-        !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBX)/4/?(ebx:y) C(ebx)/30/4/?t;
+        !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBX)/4/?(ebx:y) C(ebx)/30/2/?t C(ebx)/34/2/?s;
         !!FU(shimy_GetObjectToSetAsVisited):Pt/?(setAsVisited:y);
+        !!VR(objectToEnter:y):S(FALSE);
 
         !!if&(setAsVisited);
           !!HE(heroId):P?(hX:y)/?(hY:y)/?(hZ:y);
@@ -69,12 +81,22 @@ Logistics + Pathfinding + Scouting + Navigation
         /t=(OBJ_WATER_WHEEL)
         /t=(OBJ_GARDEN_OF_REVELATION)
         /t=(OBJ_MARLETTO_TOWER)
+        /t=(OBJ_ARENA)
+        /t=(OBJ_SCHOOL_OF_MAGIC)
+        /t=(OBJ_SCHOOL_OF_WAR)
         /t=(OBJ_FOUNTAIN_OF_FORTUNE)
         /t=(OBJ_FAERIE_RING)
         /t=(OBJ_TEMPLE)
         /t=(OBJ_IDOL_OF_FORTUNE)
         /t=(OBJ_BUOY)
         /t=(OBJ_MERMAID);
+          !!VR(objectToEnter:y):S(TRUE);
+        !!el&t=141/s=0;
+          !!VR(objectToEnter:y):S(TRUE);
+        !!el&t=144;
+          !!VR(objectToEnter:y)|s=2/s=6:S(TRUE);
+        !!en;
+        !!if&(objectToEnter);
           !!HE(heroId):P?(hX:y)/?(hY:y)/?(hZ:y);
           !!FU&(hZ)<>(z):E;
           !!FU(shimy_Hero_CanReachObject):P(heroId)/(x)/(y)/(z)/?(result:y);
@@ -176,6 +198,37 @@ Logistics + Pathfinding + Scouting + Navigation
         !!HE(heroId):V1/(cWord)/?(isVisited:y);
         !!if&(isVisited)=(FALSE);
           !!VR(pic):S(PIC_TYPE_SKILL_DEFENSE);
+          !!VR(value):S1;
+        !!en;
+
+      !!el&(objType)=(OBJ_ARENA);
+        !!HE(heroId):V7/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(value):S1;
+        !!en;
+
+      !!el&(objType)=(OBJ_SCHOOL_OF_MAGIC);
+        !!HE(heroId):V8/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(value):S1;
+        !!en;
+
+      !!el&(objType)=(OBJ_SCHOOL_OF_WAR);
+        !!HE(heroId):V9/(cWord)/?(isVisited:y);
+        !!if&(isVisited)=(FALSE);
+          !!VR(value):S1;
+        !!en;
+      !!el&(objType)=141/(objSubtype)=0;
+        !!if&i^dreamTeacher_%(cWord)_%(heroId)^=0;
+          !!FU(shimy_HeroDreamTeacherExperience):P(heroId)/?(value);
+          !!VR(pic):S(PIC_TYPE_EXPERIENCE);
+        !!en;
+      !!el&(objType)=144/(objSubtype)=2;
+        !!if&i^colosseumOfTheMagi_%(cWord)_%(heroId)^=0;
+          !!VR(value):S1;
+        !!en;
+      !!el&(objType)=144/(objSubtype)=6;
+        !!if&i^gazebo_%(cWord)_%(heroId)^=0;
           !!VR(value):S1;
         !!en;
 
@@ -333,6 +386,14 @@ Logistics + Pathfinding + Scouting + Navigation
   !!en;
 -----------------------------------------------------------------------------------------
 
+!?FU(shimy_HeroDreamTeacherExperience);
+!#VA(heroId:x) (result:x);
+  !!HE(heroId):Z?(hero:y);
+  !!VRe2:S1 +i^dreamTeacher_%(heroId)^ *500;
+  !!SN:E5130928/(CALLCONV_THISCALL_FLOAT)/(hero); [get hero learning power and store value to e1]
+  !!VRe1:*e2;
+  !!VR(result):Se1;
+
 !?FU(WOG_23_HeroGetLearningStoneExperience);
 !#VA(heroId:x) (result:x);
   !!UN:C6546672/4/?e2;                            [get stone exp]
@@ -344,14 +405,20 @@ Logistics + Pathfinding + Scouting + Navigation
 -----------------------------------------------------------------------------------------
 !?FU(shimy_VisitObjectRemote)&999;
 !#VA(x:x) (y:x) (z:x) (heroId:x) (pic:x) (value:x) (pic2:x) (value2:x);
-  !!OB(x)/(y)/(z):T?(objType:y);
+  !!OB(x)/(y)/(z):T?(objType:y) U?(objSubtype:y);
   !!HE(heroId:x):B0/?(heroName:z);
-  !!FU(WOG_GetObjectName):P(objType)/?(objName:z);
+  !!FU(WOG_GetRealObjectName):P(objType)/(objSubtype)/?(objName:z);
   !!SN:T^shimy.visit.text^/?(msg:z)/^objName^/(objName)/^heroName^/(heroName);
-  !!IF:Q2/(pic)/(value)/(pic2)/(value2)/(MSG_TYPE_QUESTION)/(msg);
-  !!if&2;
+  !!if&(objType)=(OBJ_ARENA)|(objType)=(OBJ_SCHOOL_OF_MAGIC)/(objType)=(OBJ_SCHOOL_OF_WAR)/(objType)=144;/(objType)=141; 
     !!FU(shimy_AdvMgr_PlayerHeroEnterObject):Px1/x2/x3/x4; [visit object with hero]
     !!FU(WOG_23_OnAfterEnterObject):P(x)/(y)/(z)/(objType)/i^timerOwner^; [This function would be called by 3rd party scripts]
+  !!el;
+    !!IF:Q2/(pic)/(value)/(pic2)/(value2)/(MSG_TYPE_QUESTION)/(msg);
+    !!if&2;
+      !!FU(shimy_AdvMgr_PlayerHeroEnterObject):Px1/x2/x3/x4; [visit object with hero]
+      !!FU(WOG_23_OnAfterEnterObject):P(x)/(y)/(z)/(objType)/i^timerOwner^; [This function would be called by 3rd party scripts]
+    !!en;
   !!en;
+
 
 ** End of Script **

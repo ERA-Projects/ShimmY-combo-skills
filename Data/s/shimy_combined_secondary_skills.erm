@@ -61,7 +61,7 @@ ZVSE2
   !!SN:Ex1/1/4456318/(shimy_AfterFirstShoot);43FF7E
 
   !!SN:Ex1/1/5182789/(shimy_OnMessageBoxSkillRightClick);4F1545 
-  !!SN:Ex1/1/5205083/(shimy_OnSecondaryScreenParcePicture);004F6C5B
+  !!SN:Ex1/1/5205083/(shimy_OnSecondaryScreenParsePicture);004F6C5B
   !!SN:Ex1/1/5105697/(shimy_OnHeroScreenSecondarySkillMessageBox);004DE821 
   !!SN:Ex1/1/5218505/(shimy_OnHeroLevelUpScreenSecondarySkillMessageBox);4FA0C9 
   !!SN:Ex1/1/5371214/(shimy_OnKingdomOverviewScreenSecondarySkillMessageBox);51F54E 
@@ -71,6 +71,11 @@ ZVSE2
   !!SN:Ex1/1/6113249/(shimy_Town_GetCreatureGrowthText);
   !!SN:Ex1/1/6029325/(shimy_Town_GetDwellingGrowth);
 
+  !!SN:Ex1/1/6029325/(shimy_Town_GetDwellingGrowth);
+  !!SN:Ex1/1/5008923/(shimy_EndOfTurn_AfterAutoSave);    [trigger on every player end of turn after autosave stuff]
+
+  *!SN:Ex1/1/5897005/(shimy_BeforeHintSpellDamage);
+  *!SN:Ex1/1/5897010/(shimy_AfterHintSpellDamage);
 
 // Setting multicast for heroes with all the schools 
 !?FU(OnSetupBattlefield);
@@ -143,32 +148,26 @@ ZVSE2
 !!en;
 
 !?FU(OnBattleActionEnd);
-!!BG:A?(action:y);
-
-!!FU&(action)<>(BATTLE_ACTION_HERO_CAST):E;
-
-!!re i/0/1;
-  !!VRi^shimy_battle_hero_mana_%i^:S(NULL);
-!!en;
 
 !!VR(activeSide:y):Si^battle_acting_side^;
-!!if&i^shimy_battle_hero_has_all_magic_skills_%(activeSide)^;
+!!if&i^shimy_battle_action^=(BATTLE_ACTION_HERO_CAST);
 
-  !!if&i^shimy_battle_hero_has_casted_%(activeSide:y)^<>(TRUE);
-    !!VRi^shimy_battle_hero_has_casted_%(activeSide:y)^:S(TRUE);
-    !!BH(activeSide:y):M0; allow cast
+  !!re i/0/1;
+    !!VRi^shimy_battle_hero_mana_%i^:S(NULL);
+  !!en;
 
-    !!if&i^battle_isVisible^/i^battle_human_%(activeSide)^/i^battle_hero_%i(activeSide)^>(NO_HERO);
-      !!HEi^battle_hero_%(activeSide)^:A2/(ART_META_SPELLBOOK)/?(has:y)/?(equipped:y);
-
-      !!if&(equipped);
-        !!FU(H3Dlg_GetCurrentDlg):P?(h3Dlg:y);
-        !!FU(H3Dlg_SendCmdToItem):P(h3Dlg)/2008/6/16392;
-      !!en;
+  !!if&i^shimy_battle_hero_has_all_magic_skills_%(activeSide)^;
+    !!if&i^shimy_battle_hero_has_casted_%(activeSide:y)^=0;
+      !!VRi^shimy_battle_hero_has_casted_%(activeSide:y)^:S1;
+      !!FU:E;
     !!en;
   !!en;
 !!en;
 
+!!if&i^shimy_battle_hero_has_casted_%(activeSide:y)^=1;
+  !!VRi^shimy_battle_hero_has_casted_%(activeSide:y)^:S2;
+  !!BH(activeSide:y):M0;                                      [allow cast]
+!!en;
 
 
 // all units have a 25% chance for an extra strike (or shot)
@@ -219,7 +218,6 @@ ZVSE2
 
 // adds your current spell points to your magic damage
 !?FU(OnBeforeBattleAction);
-
 !!re i/0/i^battle_hero_vs_hero^;
   !!if&i^shimy_battle_hero_increases_spell_damage_%i^;
     !!HEi^battle_hero_%i^:I?i^shimy_battle_hero_mana_%i^/1;
@@ -232,16 +230,63 @@ ZVSE2
 !!if&(action)=(BATTLE_ACTION_HERO_CAST);
   !!UN:C(COMBAT_MANAGER)/4/?(cmbMgr:y) C(cmbMgr)/78528/4/?(activeSide:y);
 
-  !!MR:D?(basicDmg:y) S?(spellId:y);                         [get spell damage]
-  !!SS(spellId):P?(power:y);
   !!VR(bonus:y):Si^shimy_battle_hero_mana_%(activeSide)^ *2;    /simi
   !!if&(bonus)>0;
+
+    !!MR:D?(basicDmg:y) S?(spellId:y);                         [get spell damage]
+    !!SS(spellId):P?(power:y);
     !!VR(bonusDamage:e):S(power) :100 *(bonus);
     !!VR(newDmg:y):S(bonusDamage) +(basicDmg);
-    !!MR&(newDmg)>(basicDmg):D(newDmg);
+    !!if&(newDmg)>(basicDmg);
+      *!VRi^shimy_battle_spell_damage_bonus_hint^:S(newDmg);
+      *!IF:L^res^;
+      !!MR:D(newDmg); F(newDmg);
+    !!en;
   !!en;
 !!en;
+*?FU(OnMagicCorrectedResistance)&i^shimy_battle_spell_damage_bonus_hint^;
+*!MR:Fi^shimy_battle_spell_damage_bonus_hint^;
+*!VR(newDmg:y):Si^shimy_battle_spell_damage_bonus_hint^;(bonusDamage) +(basicDmg);
 
+*!MR:D(newDmg) F(newDmg);
+
+!?FU(shimy_BeforeHintSpellDamage);&i^shimy_battle_spell_damage_bonus_hint^;
+  *!UN:Cx1/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/8/4/?(spellId:y);
+  !!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(spellId:y);
+  !!VR(bonus:y):Si^shimy_battle_hero_mana_0^ *2;    /simi
+  !!HEi^battle_hero_0^:I?(bonus:y)/1;
+
+  !!IF:L^%(bonus)^;
+  !!if&(bonus)>0;
+
+    !!SS(spellId):P?(power:y) P?i^gem_tetetet^;
+    !!VR(bonusDamage:e):S(power) :100 *(bonus);
+    !!VR(newPower:y):S(power) +(bonusDamage);
+    !!SS(spellId):P(newPower:y);// P?i^gem_tetetet^;
+    !!IF:L^%(power) %(newPower)^;
+    !!VRi^shimy_battle_spell_damage_bonus_hint^:S1;
+
+  !!en;
+  *!IF:L^hint^;
+  *!SS
+  *!SS(spellId):P?i^gem_tetetet^ Pdi^shimy_battle_spell_damage_bonus_hint^;
+  *!VRi^test_spell_id^:S(spellId)
+  *!if&(bonus)>0;
+    *!VR(offset:y):Si^battle_current_side^ *(UNC_INT) +21460;
+    *!UN:C(COMBAT_MANAGER)/4/?(cmbMgr:y) C(cmbMgr)/(offset)/4/?i^tox_save_hero_sp^
+    C(cmbMgr)/(offset)/4/d(bonus);
+
+  *!en;
+
+
+!?FU(shimy_AfterHintSpellDamage)&i^shimy_battle_spell_damage_bonus_hint^;
+!!UN:Cx1/(STRUCT_HOOK_CONTEXT_ESI)/4/?(spellId:y);
+!!SS(spellId):Pi^gem_tetetet^; Pdi^shimy_battle_spell_damage_bonus_hint^;
+
+  *!VR(offset:y):Si^battle_current_side^ *(UNC_INT) +21460;
+  *!UN:C(COMBAT_MANAGER)/4/?(cmbMgr:y) C(cmbMgr)/(offset)/4/i^tox_save_hero_sp^;
+  !!VRi^gem_tetetet^:S(FALSE);
+  !!VRi^shimy_battle_spell_damage_bonus_hint^:S(FALSE);
 
 
 
@@ -272,19 +317,19 @@ ZVSE2
   !!UN:C(cmbMgr)/(summonedMonOffset)/(UNC_INT)/?(origSummonedMon:y); [The monster summoned by Summon Elemental spell]
 
   ; set summoned effect 1 per number passed
-  !!SS(SPELL_EARTH_ELEMENTAL):E0/?(origEff:y) E0/1;
+  !!SS(SPELL_WATER_ELEMENTAL):E0/?(origEff:y) E0/1;
 
   ; Summon
   !!VR(var:y):S(heroLevel) :10;     /simi
   !!VR(extra:y):S(var) +1 *(var) :2;
-  !!VR(heroLevel):S(heroLevel) +(extra);
-  !!SN:E5927824/(CALLCONV_THISCALL)/(cmbMgr)/(SPELL_EARTH_ELEMENTAL)/(SHIMY_COMBO_SKILL_CREATURE_SUMMON)/(heroLevel)/0;
+  !!VR(monsToSummon:y):S(heroLevel) +(extra);
+  !!SN:E5927824/(CALLCONV_THISCALL)/(cmbMgr)/(SPELL_WATER_ELEMENTAL)/(SHIMY_COMBO_SKILL_CREATURE_SUMMON)/(monsToSummon)/0;
 
   ; Restore values to the memory
   !!UN:C(cmbMgr)/(summonedMonOffset)/(UNC_INT)/(origSummonedMon);
   !!UN:C(cmbMgr)/78528/(UNC_INT)/(origActiveSide);
 
-  !!SS(SPELL_EARTH_ELEMENTAL):E0/(origEff:y);
+  !!SS(SPELL_WATER_ELEMENTAL):E0/(origEff:y);
 !!en;
 
 
@@ -361,6 +406,27 @@ ZVSE2
 !?FU(WOG_OnResetHero);
 !#VA(heroId:x);
 !!VRi^shimy_adventure_map_selected_bonus_growth_town_id_%(heroId)^:S(NULL);
+
+
+!?FU(shimy_EndOfTurn_AfterAutoSave)&i^timerIsAi^;
+!!VR(playerID:y):Si^timerOwner^;
+!!FU(shimy_Player_GetHeroesList):P(playerID)/?(heroes:y);
+!!OW:W(playerID)/?(townsNum:y);
+
+!!if&(heroes)<>-1/(townsNum)>0;
+  !!SN:M(heroes)/?(size:y);
+  !!FU&(size)=0:E;
+  !!OW:W(playerID)/0/?(townId:y);
+
+  !!re i/0/(size)/1/-1;
+    !!SN:M(heroes)/i/?(heroId:y);
+    !!FU(shimy_Hero_HasIncreasedGrowthAbility):P(heroId)/?(result:y);
+    !!if&(result);
+      !!VRi^shimy_adventure_map_selected_bonus_growth_town_id_%(heroId)^:S(townId) +1;
+    !!en;
+  !!en;
+!!en;
+
 
 !?FU(shimy_Town_CountPlayerBonusSet);
 !#VA(townId:x) (playerId:x) (result:x);
@@ -446,7 +512,7 @@ ZVSE2
   *!UN:Cx1/(STRUCT_HOOK_CONTEXT_ECX)/4/(zVarAddr);
 *!en;
 
-!?FU(shimy_OnSecondaryScreenParcePicture)&i^shimy_block_skill_description^=0;
+!?FU(shimy_OnSecondaryScreenParsePicture)&i^shimy_block_skill_description^=0;
 
 !!UN:C6916808/4/?(heroDlg:y);
 !!if&(heroDlg:y);

@@ -30,23 +30,23 @@
 			},
 			"full": {
 				"needAdvanced": "\n{»} Skills nedeed at advanced level:\n",
-				"extraCast": "\n\n{~Yellow}Archmage} - one extra cast per turn in battle.",
-				"extraStrike": "\n\n{~Yellow}Warmaster} - all units have a 25% chance for an extra strike (or shot).",
-				"rangeVisit": "\n\n{~Yellow}Explorer} - you can visit objects from afar and gain more information when right-clicking.",
-				"spellDamage": "\n\n{~Yellow}Grand Wizzard} - add your current spell points to your magic damage.",
-				"combatSummon": "\n\n{~Yellow}Demolisher} - summon a stack of Cyclops Kings equal to at least your hero lvl.",
-				"extraGrowth": "\n\n{~Yellow}Aristocrat} - increase creature growth of a specific town by 50%.",
-				"extraDefence": "\n\n{~Yellow}General} - whenever a unit gains luck or morale increase all your unit's attack by +1 (+2 if Necro)."
+				"extraCast": "\n\n{~Yellow}Archmage} - one extra cast per turn in battle",
+				"extraStrike": "\n\n{~Yellow}Warmaster} - all units have a 25% chance for an extra strike (or shot)",
+				"rangeVisit": "\n\n{~Yellow}Explorer} - visit objects from afar and increase treasure chest gold/exp by 500",
+				"spellDamage": "\n\n{~Yellow}Grand Wizzard} - add your current spell points to your magic damage",
+				"combatSummon": "\n\n{~Yellow}Demolisher} - summon a stack of Cyclops Kings equal to at least your hero lvl",
+				"extraGrowth": "\n\n{~Yellow}Aristocrat} - increase creature growth of a specific town by 50%",
+				"extraDefence": "\n\n{~Yellow}General} - whenever a unit gains luck or morale increase all your unit's attack by +1 (+2 if Necro)"
 			},
 			"short": {
 				"needAdvanced": "\n{»} Skills needed at advanced level:\n",
-				"extraCast": "\n\n{~Yellow}Archmage} - one extra cast per turn in battle.",
-				"extraStrike": "\n\n{~Yellow}Warmaster} - all units have a 25% chance for an extra strike (or shot).",
-				"rangeVisit": "\n\n{~Yellow}Explorer} - you can visit objects from afar and gain more information when right-clicking.",
-				"spellDamage": "\n\n{~Yellow}Grand Wizzard} - add your current spell points to your magic damage.",
-				"combatSummon": "\n\n{~Yellow}Demolisher} - summon a stack of Cyclops Kings equal to at least your hero lvl.",
-				"extraGrowth": "\n\n{~Yellow}Aristocrat} - increase creature growth of a specific town by 50%.",
-				"extraDefence": "\n\n{~Yellow}General} - whenever a unit gains luck or morale increase all your unit's attack by +1 (+2 if Necro)."
+				"extraCast": "\n\n{~Yellow}Archmage} - one extra cast per turn in battle",
+				"extraStrike": "\n\n{~Yellow}Warmaster} - all units have a 25% chance for an extra strike (or shot)",
+				"rangeVisit": "\n\n{~Yellow}Explorer} - visit objects from afar and increase treasure chest gold/exp by 500",
+				"spellDamage": "\n\n{~Yellow}Grand Wizzard} - add your current spell points to your magic damage",
+				"combatSummon": "\n\n{~Yellow}Demolisher} - summon a stack of Cyclops Kings equal to at least your hero lvl",
+				"extraGrowth": "\n\n{~Yellow}Aristocrat} - increase creature growth of a specific town by 50%",
+				"extraDefence": "\n\n{~Yellow}General} - whenever a unit gains luck or morale increase all your unit's attack by +1 (+2 if Necro)"
 			}
 		}
 	}
