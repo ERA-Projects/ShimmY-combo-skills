@@ -71,7 +71,6 @@ ZVSE2
   !!SN:Ex1/1/6113249/(shimy_Town_GetCreatureGrowthText);
   !!SN:Ex1/1/6029325/(shimy_Town_GetDwellingGrowth);
 
-  !!SN:Ex1/1/6029325/(shimy_Town_GetDwellingGrowth);
   !!SN:Ex1/1/5008923/(shimy_EndOfTurn_AfterAutoSave);    [trigger on every player end of turn after autosave stuff]
 
   *!SN:Ex1/1/5897005/(shimy_BeforeHintSpellDamage);
